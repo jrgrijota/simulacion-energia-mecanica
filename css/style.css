@@ -843,14 +843,18 @@ body.theme-contrast .qr-fric     { color: #ff4444; background: #1a0000; border-c
    RESPONSIVE
 ════════════════════════════════════════════════════ */
 @media (max-width: 1100px) {
-    .app-container { grid-template-columns: 1fr; }
+    .app-container { grid-template-columns: 1fr; height: auto; min-height: 100vh; }
     body { overflow: auto; }
     .control-panel { height: auto; width: 100%; }
-    .simulation-panel { height: 60vh; }
+    /* El lienzo conserva su proporción: la página crece hacia abajo */
+    .simulation-panel { height: auto; padding: 52px 0 60px; }
+    #canvas-container { padding: 8px; }
+    #canvas-container canvas { max-height: none; height: auto !important; }
 }
 
 @media (max-width: 500px) {
-    .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+    .card { padding: 9px 8px; }
+    .metric { font-size: 1.08rem; }
 }
 
 /* ════════════════════════════════════════════════════
@@ -982,7 +986,8 @@ body.theme-contrast .qr-fric     { color: #ff4444; background: #1a0000; border-c
     justify-content: space-between;
     gap: 8px;
 }
-.balance-title b { color: #c8d8e8; font-family: monospace; font-size: 0.78rem; letter-spacing: 0; }
+.balance-title b { color: #c8d8e8; font-family: monospace; font-size: 0.78rem; letter-spacing: 0; text-transform: none; }
+.balance-title > span:last-child { text-transform: none; }
 .balance-bar {
     display: flex;
     height: 16px;
