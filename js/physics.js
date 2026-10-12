@@ -121,8 +121,9 @@ class Track {
 
 // ── Modelo de la montaña rusa ────────────────────────────────────────
 // La vagoneta va sujeta al raíl (como en las montañas rusas reales), así que
-// nunca se despega. Con rozamiento, la fuerza de rozamiento es μ·|N|, con
-// N = m·(g·cos θ + v²·κ): en los valles la normal crece y en las cimas baja.
+// nunca se despega. Con rozamiento, la fuerza de rozamiento es μ·N con
+// N = m·g·cos θ, el modelo de clase. Se ignora la parte centrípeta de la normal
+// (m·v²·κ): con valles tan cerrados concentraría casi toda la pérdida en ellos.
 class Coaster {
     constructor() {
         this.track = new Track('clasica');
@@ -154,8 +155,8 @@ class Coaster {
         if (this.stopped) { this.t += dt; return; }
         const g = this.g, m = this.m, mu = this.muEff();
         const geo = this.track.geom(this.s);
-        const N = m * (g * geo.cos + this.v * this.v * geo.curv);
-        const fr = mu * Math.abs(N);
+        const N = m * g * geo.cos;
+        const fr = mu * N;
         const aGrav = -g * geo.sin;
 
         // Reposo con rozamiento: la vagoneta solo arranca si la gravedad vence
