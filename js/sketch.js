@@ -736,7 +736,7 @@ function drawEnergyBars() {
         textSize(14);
         textStyle(BOLD);
         textAlign(CENTER, TOP);
-        text(b.key === 'Q' ? 'Q' : b.key[0] + b.key[1], x + bw / 2, bottom + 8);
+        text(i18n.t(b.key), x + bw / 2, bottom + 8);
         textStyle(NORMAL);
         textSize(10);
         const f = fmtE(b.val);
