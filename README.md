@@ -40,47 +40,8 @@ Abre `index.html` en un navegador (con `?lang=en`, la interfaz se muestra en ing
 | `css/style.css` | Estilos y temas |
 | `js/physics.js` | Modelos de la montaña rusa y del péndulo: integración, rozamiento y balance de energía |
 | `js/sketch.js` | Dibujo de la escena, de las barras y de la gráfica; controles |
-| `js/i18n.js`, `js/i18n-*.js` | Traducciones de la interfaz |
+| `js/i18n.js`, `js/i18n-en.js`, `js/i18n-ca.js`, `js/i18n-eu.js`, `js/i18n-gl.js` | Idioma de la interfaz (`?lang=en`, `?lang=ca`, `?lang=eu`, `?lang=gl`) y traducciones al inglés, al catalán, al euskera y al gallego |
 | `js/estadisticas.js` | Recuento anónimo de visitas (GoatCounter, sin cookies) |
-| `guias/energia-mecanica.md` | Guía docente, lista para copiarse en `guias/` del portal |
-
-## Alta en SimulaCiencia
-
-Para publicarla en el portal hay que copiar `guias/energia-mecanica.md` en `guias/` del
-repositorio `simulaciencia` y añadir esta entrada a `src/data/simulations.js`:
-
-```js
-  {
-    id: 'sim-energia-mecanica',
-    title: 'Energía Mecánica',
-    description:
-      'Montaña rusa y péndulo: observa cómo la energía potencial se convierte en cinética y, con rozamiento, cómo la energía mecánica se degrada en calor.',
-    tags: ['Física', 'ESO', 'Bachillerato'],
-    url: 'https://jrgrijota.github.io/simulacion-energia-mecanica/',
-    responsive: true,
-    courses: ['3ESO', '4ESO', '1BACH'],
-    en: {
-      title: 'Mechanical Energy',
-      description:
-        'Roller coaster and pendulum: watch potential energy turn into kinetic energy and, with friction, mechanical energy being degraded into heat.',
-    },
-    ca: {
-      title: 'Energia Mecànica',
-      description:
-        "Muntanya russa i pèndol: observa com l'energia potencial es converteix en cinètica i, amb fregament, com l'energia mecànica es degrada en calor.",
-    },
-    eu: {
-      title: 'Energia mekanikoa',
-      description:
-        'Mendi errusiarra eta pendulua: ikusi nola bihurtzen den energia potentziala zinetiko eta, marruskadurarekin, nola degradatzen den energia mekanikoa beroan.',
-    },
-    gl: {
-      title: 'Enerxía mecánica',
-      description:
-        'Montaña rusa e péndulo: observa como a enerxía potencial se converte en cinética e, con rozamento, como a enerxía mecánica se degrada en calor.',
-    },
-  },
-```
 
 ## Licencia
 
