@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Energía Mecánica — Simulación Interactiva</title>
+    <script src="js/i18n-en.js"></script>
+    <script src="js/i18n-ca.js"></script>
+    <script src="js/i18n-eu.js"></script>
+    <script src="js/i18n-gl.js"></script>
+    <script src="js/i18n.js"></script>
+    <script src="js/vendor/p5.min.js"></script>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <script src="js/estadisticas.js" data-sim="sim-energia-mecanica"></script>
+</head>
+<body class="mode-coaster">
+    <div class="app-container">
+
+        <!-- ── PANEL DE CONTROL ──────────────────────────────────── -->
+        <aside class="control-panel">
+
+            <header>
+                <div class="header-top">
+                    <svg class="header-icon-svg" width="42" height="42" viewBox="0 0 42 42" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <!-- Marco -->
+                        <rect x="3" y="5" width="36" height="32" rx="3.5" stroke="#585858" stroke-width="1.8" fill="#0d0d0d"/>
+                        <!-- Vía de la montaña rusa -->
+                        <path d="M6 11 C13 11 13 31 21 31 C28 31 28 20 36 20" stroke="#9aa8b8" stroke-width="2" fill="none" stroke-linecap="round"/>
+                        <!-- Vagoneta -->
+                        <circle cx="9" cy="10.5" r="3.2" fill="#00c8ff" stroke="#e0f6ff" stroke-width="1"/>
+                        <!-- Barras de energía: cinética, potencial, calor -->
+                        <rect x="25" y="27" width="3.2" height="8" rx="0.8" fill="#4ade80"/>
+                        <rect x="29.2" y="30" width="3.2" height="5" rx="0.8" fill="#38bdf8"/>
+                        <rect x="33.4" y="32" width="3.2" height="3" rx="0.8" fill="#fb923c"/>
+                    </svg>
+                    <h1>Energía Mecánica</h1>
+                </div>
+                <p class="subtitle">Cinética, Potencial y Rozamiento</p>
+                <details class="header-details">
+                    <summary>Descripción y reglas rápidas</summary>
+                    <div class="header-details-body">
+                        <p class="section-note" data-i18n="nota-descripcion">
+                            Suelta una vagoneta en una montaña rusa o un péndulo y observa cómo la energía
+                            potencial se convierte en cinética y al revés. Activa el rozamiento para ver
+                            cómo la energía mecánica se degrada en calor.
+                        </p>
+                        <div class="quick-rule">
+                            <span class="qr-cons" data-i18n="regla-conserva">Sin rozamiento → E<sub>m</sub> = E<sub>c</sub> + E<sub>p</sub> = constante</span>
+                            <span class="qr-fric" data-i18n="regla-rozamiento">Con rozamiento → E<sub>m</sub> disminuye</span>
+                            <span class="qr-bal" data-i18n="regla-balance">E<sub>m,inicial</sub> = E<sub>c</sub> + E<sub>p</sub> + Q (calor)</span>
+                        </div>
+                    </div>
+                </details>
+            </header>
+
+            <hr class="divider">
+
+            <!-- SELECTOR DE MODO -->
+            <div class="mode-switch" role="tablist">
+                <button id="mode-coaster" type="button" class="mode-btn active">
+                    Montaña rusa
+                    <span class="mode-sub">vagoneta en la vía</span>
+                </button>
+                <button id="mode-pendulum" type="button" class="mode-btn">
+                    Péndulo
+                    <span class="mode-sub">bola y un hilo</span>
+                </button>
+            </div>
+
+            <!-- REPRODUCCIÓN -->
+            <section class="control-group">
+                <div class="btn-row">
+                    <button id="btn-play" type="button" class="ctrl-btn primary">⏸ Pausar</button>
+                    <button id="btn-reset" type="button" class="ctrl-btn">↺ Reiniciar</button>
+                </div>
+                <div class="input-wrapper">
+                    <span class="label-container"><label id="lbl-speed">Velocidad de reproducción</label></span>
+                    <div class="seg-group" role="group" aria-labelledby="lbl-speed">
+                        <button type="button" class="seg-btn" data-speed="0.25">×¼</button>
+                        <button type="button" class="seg-btn" data-speed="0.5">×½</button>
+                        <button type="button" class="seg-btn active" data-speed="1">×1</button>
+                        <button type="button" class="seg-btn" data-speed="2">×2</button>
+                    </div>
+                </div>
+            </section>
+
+            <hr class="divider">
+
+            <!-- MONTAÑA RUSA -->
+            <section class="control-group only-coaster">
+                <h2>Montaña rusa</h2>
+
+                <div class="input-wrapper">
+                    <label for="track-profile">Perfil de la vía</label>
+                    <select id="track-profile" class="custom-select">
+                        <option value="clasica" selected>Clásica (varias colinas)</option>
+                        <option value="colina">Colina más alta (27 m)</option>
+                        <option value="valle">Valle en U</option>
+                    </select>
+                </div>
+
+                <div class="input-wrapper">
+                    <div class="label-container">
+                        <label for="slider-h0">Altura de salida</label>
+                        <span id="val-h0" class="value-badge">25,0 m</span>
+                    </div>
+                    <input type="range" id="slider-h0" min="5" max="30" value="25" step="0.5">
+                    <div class="slider-bounds"><span>5 m</span><span>30 m</span></div>
+                </div>
+
+                <div class="input-wrapper">
+                    <div class="label-container">
+                        <label for="slider-v0">Velocidad inicial</label>
+                        <span id="val-v0" class="value-badge">0,0 m/s</span>
+                    </div>
+                    <input type="range" id="slider-v0" min="0" max="15" value="0" step="0.5">
+                    <div class="slider-bounds"><span>0 m/s</span><span>15 m/s</span></div>
+                </div>
+
+                <div class="input-wrapper">
+                    <div class="label-container">
+                        <label for="slider-mc">Masa de la vagoneta</label>
+                        <span id="val-mc" class="value-badge">500 kg</span>
+                    </div>
+                    <input type="range" id="slider-mc" min="100" max="1000" value="500" step="50">
+                    <div class="slider-bounds"><span>100 kg</span><span>1000 kg</span></div>
+                </div>
+                <p class="field-hint" data-i18n="ayuda-arrastrar-vagoneta">También puedes arrastrar la vagoneta con el ratón (o el dedo) a cualquier punto de la vía.</p>
+            </section>
+
+            <!-- PÉNDULO -->
+            <section class="control-group only-pendulum">
+                <h2>Péndulo</h2>
+
+                <div class="input-wrapper">
+                    <div class="label-container">
+                        <label for="slider-len">Longitud del hilo</label>
+                        <span id="val-len" class="value-badge">2,0 m</span>
+                    </div>
+                    <input type="range" id="slider-len" min="0.5" max="5" value="2" step="0.1">
+                    <div class="slider-bounds"><span>0,5 m</span><span>5,0 m</span></div>
+                </div>
+
+                <div class="input-wrapper">
+                    <div class="label-container">
+                        <label for="slider-ang">Ángulo inicial</label>
+                        <span id="val-ang" class="value-badge">45°</span>
+                    </div>
+                    <input type="range" id="slider-ang" min="5" max="90" value="45" step="1">
+                    <div class="slider-bounds"><span>5°</span><span>90°</span></div>
+                </div>
+
+                <div class="input-wrapper">
+                    <div class="label-container">
+                        <label for="slider-mp">Masa de la bola</label>
+                        <span id="val-mp" class="value-badge">1,0 kg</span>
+                    </div>
+                    <input type="range" id="slider-mp" min="0.1" max="5" value="1" step="0.1">
+                    <div class="slider-bounds"><span>0,1 kg</span><span>5,0 kg</span></div>
+                </div>
+                <p class="field-hint" data-i18n="ayuda-arrastrar-bola">También puedes arrastrar la bola con el ratón (o el dedo) para soltarla desde otro ángulo.</p>
+            </section>
+
+            <hr class="divider">
+
+            <!-- ENTORNO -->
+            <section class="control-group">
+                <h2>Entorno</h2>
+
+                <div class="input-wrapper">
+                    <label for="gravity-select">Gravedad</label>
+                    <select id="gravity-select" class="custom-select">
+                        <option value="tierra" selected>Tierra (9,8 m/s²)</option>
+                        <option value="luna">Luna (1,62 m/s²)</option>
+                        <option value="marte">Marte (3,71 m/s²)</option>
+                        <option value="jupiter">Júpiter (24,79 m/s²)</option>
+                    </select>
+                </div>
+
+                <label class="switch-row" for="friction-toggle">
+                    <span>Rozamiento <span class="label-hint">(fuerza no conservativa)</span></span>
+                    <span class="switch">
+                        <input type="checkbox" id="friction-toggle">
+                        <span class="switch-track"></span>
+                    </span>
+                </label>
+
+                <div id="wrap-mu" class="input-wrapper only-coaster is-disabled">
+                    <div class="label-container">
+                        <label for="slider-mu">Coeficiente de rozamiento (μ)</label>
+                        <span id="val-mu" class="value-badge">0,05</span>
+                    </div>
+                    <input type="range" id="slider-mu" min="0.01" max="0.2" value="0.05" step="0.01" disabled>
+                    <div class="slider-bounds"><span>0,01</span><span>0,20</span></div>
+                </div>
+
+                <div id="wrap-b" class="input-wrapper only-pendulum is-disabled">
+                    <div class="label-container">
+                        <label for="slider-b">Resistencia del aire (b)</label>
+                        <span id="val-b" class="value-badge">0,10 kg/s</span>
+                    </div>
+                    <input type="range" id="slider-b" min="0.01" max="0.5" value="0.1" step="0.01" disabled>
+                    <div class="slider-bounds"><span>0,01</span><span>0,50 kg/s</span></div>
+                </div>
+            </section>
+
+            <hr class="divider">
+
+            <!-- MÉTRICAS EN TIEMPO REAL (plegable) -->
+            <details class="custom-details" open>
+                <summary>Monitorización en tiempo real</summary>
+                <div class="details-content metrics-content">
+
+                    <div class="metrics-grid">
+                        <div class="card card-data">
+                            <h3>Velocidad</h3>
+                            <div class="metric">
+                                <span id="metric-v">0,0</span>
+                                <small>m/s</small>
+                            </div>
+                        </div>
+                        <div class="card card-data">
+                            <h3>Altura</h3>
+                            <div class="metric">
+                                <span id="metric-h">0,0</span>
+                                <small>m</small>
+                            </div>
+                        </div>
+                        <div class="card card-data">
+                            <h3>Tiempo</h3>
+                            <div class="metric">
+                                <span id="metric-t">0,0</span>
+                                <small>s</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="metrics-grid">
+                        <div class="card card-data">
+                            <h3><span class="dot c-ec"></span>E. cinética</h3>
+                            <div class="metric">
+                                <span id="metric-ec" class="c-ec">0</span>
+                                <small id="unit-ec">J</small>
+                            </div>
+                        </div>
+                        <div class="card card-data">
+                            <h3><span class="dot c-ep"></span>E. potencial</h3>
+                            <div class="metric">
+                                <span id="metric-ep" class="c-ep">0</span>
+                                <small id="unit-ep">J</small>
+                            </div>
+                        </div>
+                        <div class="card card-data">
+                            <h3><span class="dot c-em"></span>E. mecánica</h3>
+                            <div class="metric">
+                                <span id="metric-em" class="c-em">0</span>
+                                <small id="unit-em">J</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card card-estado">
+                        <div class="balance-title">
+                            <span>Balance de energía</span>
+                            <span>E<sub>inicial</sub> = <b id="metric-e0">0 J</b></span>
+                        </div>
+                        <div class="balance-bar" aria-hidden="true">
+                            <span id="bb-ec" class="bb-ec" style="width:0%"></span>
+                            <span id="bb-ep" class="bb-ep" style="width:100%"></span>
+                            <span id="bb-q" class="bb-q" style="width:0%"></span>
+                        </div>
+                        <div class="balance-legend">
+                            <span class="c-ec">E<sub>c</sub> <b id="pct-ec">0 %</b></span>
+                            <span class="c-ep">E<sub>p</sub> <b id="pct-ep">100 %</b></span>
+                            <span class="c-q">Q <b id="pct-q">0 %</b></span>
+                        </div>
+                        <p id="balance-note" class="balance-note">—</p>
+                    </div>
+                </div>
+            </details>
+
+            <!-- FÓRMULAS -->
+            <details class="custom-details">
+                <summary>Fórmulas esenciales</summary>
+                <div class="details-content">
+                    <div class="card edu-card">
+                        <div class="formula-list">
+                            <div class="formula">
+                                <span class="formula-name">E. cinética:</span>
+                                <span class="formula-eq">E<sub>c</sub> = ½ · m · v²</span>
+                            </div>
+                            <div class="formula">
+                                <span class="formula-name">E. potencial:</span>
+                                <span class="formula-eq">E<sub>p</sub> = m · g · h</span>
+                            </div>
+                            <div class="formula">
+                                <span class="formula-name">E. mecánica:</span>
+                                <span class="formula-eq">E<sub>m</sub> = E<sub>c</sub> + E<sub>p</sub></span>
+                            </div>
+                            <div class="formula">
+                                <span class="formula-name">Sin rozamiento:</span>
+                                <span class="formula-eq">E<sub>m,A</sub> = E<sub>m,B</sub></span>
+                            </div>
+                            <div class="formula">
+                                <span class="formula-name">Con rozamiento:</span>
+                                <span class="formula-eq" data-i18n="formula-rozamiento">E<sub>m,A</sub> = E<sub>m,B</sub> + |W<sub>roz</sub>|</span>
+                            </div>
+                            <div class="formula only-coaster">
+                                <span class="formula-name">Rozamiento:</span>
+                                <span class="formula-eq">F<sub>roz</sub> = μ · N</span>
+                            </div>
+                            <div class="formula only-pendulum">
+                                <span class="formula-name">Aire:</span>
+                                <span class="formula-eq">F<sub>aire</sub> = b · v</span>
+                            </div>
+                            <div class="formula only-pendulum">
+                                <span class="formula-name">Altura:</span>
+                                <span class="formula-eq">h = L · (1 − cos θ)</span>
+                            </div>
+                            <div class="formula">
+                                <span class="formula-name">Sin pérdidas:</span>
+                                <span class="formula-eq">v = √(2 · g · Δh)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </details>
+
+        </aside>
+
+        <!-- ── PANEL DE SIMULACIÓN ───────────────────────────────── -->
+        <main class="simulation-panel">
+            <button id="vec-toggle" type="button" class="canvas-toggle-btn"
+                    aria-pressed="false"
+                    title="Mostrar / ocultar el vector velocidad">
+                Vector velocidad
+            </button>
+
+            <!-- Botón de tema -->
+            <button id="theme-btn" class="theme-btn" title="Cambiar tema" aria-label="Cambiar tema" aria-expanded="false">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58
+                    c0.18-0.14,0.23-0.41,0.12-0.61l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96
+                    c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41h-3.84
+                    c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33
+                    c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58
+                    C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58c-0.18,0.14-0.23,0.41-0.12,0.61
+                    l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94
+                    l0.36,2.54c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54
+                    c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32
+                    c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z
+                    M12,15.6c-1.98,0-3.6-1.62-3.6-3.6s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/>
+                </svg>
+            </button>
+            <div id="theme-panel" class="theme-panel" aria-hidden="true">
+                <p class="theme-panel-title">Tema visual</p>
+                <div class="theme-options">
+                    <button class="theme-opt active" data-theme="dark">
+                        <span class="theme-swatch dark-swatch"></span>Oscuro
+                    </button>
+                    <button class="theme-opt" data-theme="light">
+                        <span class="theme-swatch light-swatch"></span>Claro
+                    </button>
+                    <button class="theme-opt" data-theme="contrast">
+                        <span class="theme-swatch contrast-swatch"></span>Alto contraste
+                    </button>
+                </div>
+            </div>
+
+            <div id="canvas-container"></div>
+        </main>
+
+    </div>
+    <script src="js/physics.js"></script>
+    <script src="js/sketch.js"></script>
+</body>
+</html>
