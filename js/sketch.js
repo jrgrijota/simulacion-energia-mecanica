@@ -120,6 +120,27 @@ function setup() {
     setupThemePanel();
     applyFriction();
     resetSim();
+
+    // Simulación ya preparada desde la dirección (js/parametros.js),
+    // p. ej. ?modo=pendulo&longitud=1&angulo=30 o ?perfil=colina&altura=20&rozamiento=si
+    aplicarParametrosUrl({
+        modo:       (v) => {
+            const m = { montana: 'coaster', 'montaña': 'coaster', 'montana-rusa': 'coaster',
+                        pendulo: 'pendulum', 'péndulo': 'pendulum' }[v];
+            if (m) setMode(m);
+        },
+        perfil:     urlParam.select('track-profile'),
+        altura:     urlParam.range('slider-h0'),
+        velocidad:  urlParam.range('slider-v0'),
+        masa:       (v) => urlParam.range(currentMode === 'pendulum' ? 'slider-mp' : 'slider-mc')(v),
+        longitud:   urlParam.range('slider-len'),
+        angulo:     urlParam.range('slider-ang'),
+        gravedad:   urlParam.select('gravity-select'),
+        rozamiento: urlParam.toggle('friction-toggle', (el) => el.checked),
+        mu:         urlParam.range('slider-mu'),
+        b:          urlParam.range('slider-b'),
+        vector:     urlParam.toggle('vec-toggle', (el) => el.getAttribute('aria-pressed') === 'true'),
+    });
 }
 
 function setupThemePanel() {
